@@ -34,25 +34,12 @@ http {
   ssl_certificate /code/private/fullchain.pem;
   ssl_certificate_key /code/private/privkey.pem;
 
-  ssl_protocols TLSv1.3;
-  ssl_prefer_server_ciphers on;
-  ssl_ciphers ECDHE-RSA-AES256-GCM-SHA512:DHE-RSA-AES256-GCM-SHA512:ECDHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-SHA384;
-  ssl_ecdh_curve secp384r1;
-  ssl_session_timeout  10m;
-  ssl_session_cache shared:SSL:10m;
-  ssl_session_tickets off;
-  ssl_stapling on;
-  ssl_stapling_verify on;
-  resolver 8.8.8.8 8.8.4.4 valid=300s;
-  resolver_timeout 5s;
-  add_header Strict-Transport-Security "max-age=63072000; includeSubDomains; preload";
-  add_header X-Frame-Options DENY;
-  add_header X-Content-Type-Options nosniff;
-  add_header X-XSS-Protection "1; mode=block";
-  add_header X-Robots-Tag none;
-
   server {
     listen 80 default_server;
+
+    location /healthz {
+      return 200;
+    }
 
     location /.well-known/acme-challenge/ {
       if ($request_method != GET) {
@@ -108,7 +95,7 @@ http {
   upstream {{.}} {
     least_conn;
     {{- range scratch.MapValues (print "serversByUpstream:" .)}}
-    server {{.}};
+    server {{.}} max_fails=3 fail_timeout=60 weight=1;
     {{- else}}
     server localhost:65535;
     {{- end}}
@@ -118,6 +105,23 @@ http {
   server {
     listen {{if eq (env "USE_SSL") "1"}}443 ssl{{else}}80{{end}};
     server_name {{$domain}};
+
+  {{- if eq (env "USE_SSL") "1" }}
+    ssl_prefer_server_ciphers on;
+    ssl_ciphers ECDHE-RSA-AES256-GCM-SHA512:DHE-RSA-AES256-GCM-SHA512:ECDHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-SHA384;
+    ssl_ecdh_curve secp384r1;
+    ssl_session_timeout 10m;
+    ssl_session_cache shared:SSL:10m;
+    ssl_session_tickets off;
+    ssl_stapling on;
+    ssl_stapling_verify on;
+    resolver 8.8.8.8 8.8.4.4 valid=300s;
+    resolver_timeout 5s;
+    add_header X-Frame-Options DENY;
+    add_header X-Content-Type-Options nosniff;
+    add_header X-XSS-Protection "1; mode=block";
+    add_header X-Robots-Tag none;
+  {{- end -}}
 
   {{- $authsByDomain := scratch.Get (print "authsByDomain:" .) -}}
   {{- range scratch.MapValues (print "pathsByDomain:" $domain)}}

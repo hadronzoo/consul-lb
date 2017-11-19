@@ -17,7 +17,7 @@
         {
           "id": "www",
           "name": "HTTP health check",
-          "args": ["curl", "-fsSo", "/dev/null", "localhost"],
+          "http": "http://localhost/healthz",
           "interval": "10s",
           "timeout": "5s"
         }
