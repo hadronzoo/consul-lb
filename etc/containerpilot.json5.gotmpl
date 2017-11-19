@@ -1,6 +1,26 @@
 {
-  consul: '{{env "CONSUL_URL"}}',
+  consul: 'localhost:8500',
   jobs: [
+    {
+      name: "consul-agent",
+      exec: [
+        "consul", "agent",
+        "-config-file=/etc/consul/consul.json",
+        "-rejoin",
+        "-retry-join", "{{ .CONSUL_HOST }}",
+        "-retry-max", "10",
+        "-retry-interval", "10s"
+      ],
+      restarts: "unlimited"
+    },
+    {
+      name: "leave-consul",
+      exec: "consul leave",
+      when: {
+        source: "consul-agent",
+        once: "stopping"
+      }
+    },
     {{- if env "USE_SSL"}}
     {name: 'check-cert', exec: '/code/bin/check-cert', when: {interval: '12h'}},
     {{- end}}
@@ -9,13 +29,7 @@
       name: '{{env "CONSUL_SERVICE_NAME"}}',
       exec: 'nginx',
       when: {source: 'setup', once: 'exitSuccess'},
-      restarts: 'unlimited',
-      port: 80,
-      {{- if env "CONSUL_SERVICE_TAGS"}}
-      tags: ["{{env "CONSUL_SERVICE_TAGS" | split "," | join "\", \""}}"],
-      {{- end}}
-      health: {exec: 'curl -fsSo /dev/null localhost', interval: 5, ttl: 10},
-      consul: {deregisterCriticalServiceAfter: '10m'}
+      restarts: 'unlimited'
     },
     {
       name: 'watch',

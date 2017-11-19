@@ -1,0 +1,27 @@
+{
+  "datacenter": "{{env "DATACENTER"}}",
+  "client_addr": "0.0.0.0",
+  "data_dir": "/var/lib/consul/data",
+  "log_level": "INFO",
+  "server": false,
+  "leave_on_terminate": true,
+  "enable_script_checks": true,
+  "services": [
+    {
+      "name": "{{env "CONSUL_SERVICE_NAME"}}",
+      {{- if env "CONSUL_SERVICE_TAGS"}}
+      "tags": ["{{env "CONSUL_SERVICE_TAGS" | split "," | join "\", \""}}"],
+      {{- end}}
+      "port": 80,
+      "checks": [
+        {
+          "id": "www",
+          "name": "HTTP health check",
+          "args": ["curl", "-fsSo", "/dev/null", "localhost"],
+          "interval": "10s",
+          "timeout": "5s"
+        }
+      ]
+    }
+  ]
+}
