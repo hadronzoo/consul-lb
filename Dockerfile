@@ -27,7 +27,7 @@ ENV \
   CONSUL_SERVICE_NAME='consul-lb' \
   CONSUL_SERVICE_TAGS='' \
   CONSUL_HOST='consul' \
-  CONSUL_URL='http://consul:8500' \
+  CONSUL_URL='http://localhost:8500' \
   CONTAINERPILOT='/code/etc/containerpilot.json5.gotmpl' \
   DATACENTER='dc1' \
   LETSENCRYPT_EMAIL_ADDRESS='' \
