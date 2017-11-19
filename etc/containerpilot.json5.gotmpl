@@ -11,7 +11,8 @@
         "-retry-max", "10",
         "-retry-interval", "10s"
       ],
-      restarts: "unlimited"
+      restarts: "unlimited",
+      stopTimeout: "5s"
     },
     {
       name: "leave-consul",
