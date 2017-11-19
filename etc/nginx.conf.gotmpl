@@ -103,7 +103,7 @@ http {
   {{- end}}
 
   server {
-    listen {{if eq (env "USE_SSL") "1"}}443 ssl{{else}}80{{end}};
+    listen {{if eq (env "USE_SSL") "1"}}443 ssl http2{{else}}80{{end}};
     server_name {{$domain}};
 
   {{- if eq (env "USE_SSL") "1" }}
