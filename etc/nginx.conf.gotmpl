@@ -30,9 +30,9 @@ http {
     application/javascript;
 
 {{- if eq (env "USE_SSL") "1" }}
-
   ssl_certificate /code/private/fullchain.pem;
   ssl_certificate_key /code/private/privkey.pem;
+{{- end -}}
 
   server {
     listen 80 default_server;
@@ -54,7 +54,6 @@ http {
       return 302 https://$host$request_uri;
     }
   }
-{{- end -}}
 
 {{- $prefix := env "CONSUL_TAG_PREFIX" -}}
 {{- $prefixAuthRegex := print "^" $prefix "\\.auth=" -}}
